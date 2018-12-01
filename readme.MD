@@ -9,7 +9,7 @@
 ##### Install frost-server
 
 If helm repo isn't already declared\
-`helm repo add fraunhoferiosb https://fraunhoferiosb.github.io/helm-charts/`
+`helm repo add fraunhoferiosb https://fraunhoferiosb.github.io/helm-charts/`\
 `helm repo update fraunhoferiosb`
 
 Then install frost with custom values in .yaml file\
