@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: default
+  annotations:
+      traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+  - host: groupe6.tiir.ovh
+    http:
+      paths:
+      - path: /grafana
+        backend:
+          serviceName: grafana
+          servicePort: 2222
+

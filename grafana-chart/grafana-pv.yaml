@@ -1,0 +1,14 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: grafana-pv
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 30Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/data"
