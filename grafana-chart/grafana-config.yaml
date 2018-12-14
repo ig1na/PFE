@@ -24,7 +24,7 @@ livenessProbe:
 
 image:
   repository: grafana/grafana
-  tag: 5.3.4
+  tag: 5.4.2
   pullPolicy: IfNotPresent
 
   ## Optionally specify an array of imagePullSecrets.
@@ -37,6 +37,9 @@ image:
 securityContext:
   runAsUser: 472
   fsGroup: 472
+
+## Assign a PriorityClassName to pods if set
+# priorityClassName:
 
 downloadDashboardsImage:
   repository: appropriate/curl
@@ -54,9 +57,8 @@ downloadDashboardsImage:
 ## ref: http://kubernetes.io/docs/user-guide/services/
 ##
 service:
-  type: LoadBalancer
-  port: 80
-  targetPort: 3000
+  type: ClusterIP
+  port: 2222
   annotations: {}
   labels: {}
 
@@ -85,7 +87,8 @@ resources: {}
 ## Node labels for pod assignment
 ## ref: https://kubernetes.io/docs/user-guide/node-selection/
 #
-nodeSelector: {}
+nodeSelector:
+    myk8s-2: myk8s-2
 
 ## Tolerations for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -102,16 +105,16 @@ affinity: {}
 ##
 persistence:
   enabled: true
-  storageClassName: default
-  accessModes:
+  storageClassName: standard
+  accessModes: 
     - ReadWriteOnce
-  size: 1Mi
+  size: 30Mi
   annotations: {}
-  subPath: ""
-  existingClaim: grafana-data
+  subPath: "grafana"
+  existingClaim: grafana-pvc
 
 adminUser: admin
-adminPassword: admin
+adminPassword: strongpassword
 
 ## Use an alternate scheduler, e.g. "stork".
 ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
@@ -135,7 +138,8 @@ extraSecretMounts: []
 
 ## Pass the plugins you want installed as a list.
 ##
-plugins: []
+plugins:
+    - linksmart-sensorthings-datasource
   # - digrich-bubblechart-panel
   # - grafana-clock-panel
 
@@ -211,6 +215,9 @@ grafana.ini:
     provisioning: /etc/grafana/provisioning
   analytics:
     check_for_updates: true
+  server:
+    domain: groupe6.tiir.ovh
+    root_url: http://groupe6.tiir.ovh/grafana
   log:
     mode: console
   grafana_net:
@@ -282,3 +289,4 @@ sidecar:
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
     searchNamespace: null
+
