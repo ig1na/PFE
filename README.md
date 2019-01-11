@@ -21,6 +21,8 @@ Etendre la base de données OGC pour matcher celle déjà existante.
 
 ### Commands
 
+Execute these commands in the root directory of this project.
+
 #### Install Helm/Tiller in order to use charts:
 
 `curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh`\
@@ -29,7 +31,7 @@ Etendre la base de données OGC pour matcher celle déjà existante.
 
 `helm --init tiller-namespace appoline-k8s`
 
-##### Install Traefik as daemon-set mode:
+##### Install Traefik in daemon-set mode:
 `kubectl apply -f traefik-rbac.yaml`\
 `kubectl apply -f traefik-ds.yaml`\
 `kubectl apply -f traefik-ingress.yaml`
@@ -38,17 +40,36 @@ Etendre la base de données OGC pour matcher celle déjà existante.
 SensorThings plugin is automatically installed.\
 `helm install --name grafana-release -f ./grafana-chart/grafana-config.yaml stable/grafana`
 
+Ingress.\
+`kubectl apply -f ./grafana-chart/grafana-ingress.yaml`
+
+Connect on the node you want to install Grafana and create the directory /tmp/data.\
+`mkdir /tmp/data`
+
+PersistentVolume and VolumeClaim (for persistence).\
+`kubectl create -f ./grafana-chart/grafana-pv.yaml`\
+`kubectl create -f ./grafana-chart/grafana-pvc.yaml`
+
 ##### Install Frost-server:
 If helm repo isn't already declared\
 `helm repo add fraunhoferiosb https://fraunhoferiosb.github.io/helm-charts/`\
 `helm repo update fraunhoferiosb`
 
-Then install frost with custom values in .yaml file\
+Then install frost with custom values in .yaml file.\
 `helm install --name frost-release -f ./frost-chart/frost-config.yaml fraunhoferiosb/frost-server`
+
+Ingress.\
+`kubectl apply -f ./frost-chart/frost-ingress.yaml`
+
+Connect on the node you want to install Frost-server and create the directory /tmp/frost.\
+`mkdir /tmp/frost`
+
+PersistentVolume and VolumeClaim.\
+`kubectl create -f ./frost-chart/frost-pv.yaml`\
+`kubectl create -f ./frost-chart/frost-pvc.yaml`
 
 ##### Removes helm release:
 `helm del --purge release-name`
 
 ##### Kubectl helpers (bash inside pod):
 `kub exec -it POD-NAME -- /bin/bash`
-
