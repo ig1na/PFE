@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: frost-server
+  namespace: default
+  annotations:
+      traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+  - host: groupe6.tiir.ovh
+    http:
+      paths:
+      - path: /frost-server
+        backend:
+          serviceName: my-frost-server-http
+          servicePort: 80
+
