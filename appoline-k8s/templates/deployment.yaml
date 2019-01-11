@@ -1,0 +1,139 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: default
+  annotations:
+      traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+  - host: {{ .Values.host }}
+    http:
+      paths:
+      - path: /grafana
+        backend:
+          serviceName: grafana
+          servicePort: 2222
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: frost-server
+  namespace: default
+  annotations:
+      traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+  - host: {{ .Values.host }}
+    http:
+      paths:
+      - path: /frost-server
+        backend:
+          serviceName: my-frost-server-http
+          servicePort: 80
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: grafana-pv
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 30Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/data"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: frost-pv
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/frost"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: grafana-pvc
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: frost-pvc
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "appoline-k8s.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "appoline-k8s.name" . }}
+    helm.sh/chart: {{ include "appoline-k8s.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "appoline-k8s.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "appoline-k8s.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
