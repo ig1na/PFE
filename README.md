@@ -15,9 +15,9 @@ La persistence des données est maintenant activée, nous avons pour cela dû cr
 
 ### Ce qu'il nous reste à faire
 
-Deployer istio sur le cluster et tenter de sécuriser le cluster
-Pouvoir deployer correctement les différentes parties et faire un scrpit bash qui execute tout en une ligne de commande
-Etendre la base de données OGC pour matcher celle déjà existante
+Deployer istio sur le cluster et tenter de sécuriser le cluster.\
+Pouvoir deployer correctement les différentes parties et faire un scrpit bash qui execute tout en une ligne de commande.\
+Etendre la base de données OGC pour matcher celle déjà existante.
 
 ### Commands
 
