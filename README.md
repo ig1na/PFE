@@ -1,7 +1,7 @@
-# PFE - Apolline-k8s
-## Hugo Alder - Antoine Lafrance
+#PFE - Apolline-k8s
+##Hugo Alder - Antoine Lafrance
 
-### Commands
+###Commands
 
 ####Install Helm/Tiller in order to use charts:
 
