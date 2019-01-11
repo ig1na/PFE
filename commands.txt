@@ -1,3 +1,0 @@
-INSTALL GRAFANA WITH CUSTOM VALUES IN GRAFANA-CONFIG.YAML : helm install --name grafana -f .\grafana-chart\grafana-config.yaml stable/grafana
-REMOVES GRAFANA HELM : helm del --purge grafana;
-BASH INTO POD : kub exec -it POD-NAME -- /bin/bash
