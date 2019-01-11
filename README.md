@@ -1,9 +1,9 @@
-#PFE - Apolline-k8s
-##Hugo Alder - Antoine Lafrance
+# PFE - Apolline-k8s
+## Hugo Alder - Antoine Lafrance
 
-###Commands
+### Commands
 
-####Install Helm/Tiller in order to use charts:
+#### Install Helm/Tiller in order to use charts:
 
 `curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh`\
 `chmod 700 get_helm.sh`\
