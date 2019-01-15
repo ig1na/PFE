@@ -33,7 +33,7 @@ Execute these commands in the root directory of this project.
 
 #### Installer notre chart helm
 
-`helm install --name my-release-name --set global.host="mon-host.fr" .`
+`helm install --name my-release-name --set global.host="mon-host.fr" appoline-k8s/`
 
 ##### Install Traefik in daemon-set mode:
 `kubectl apply -f traefik-rbac.yaml`\
