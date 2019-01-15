@@ -6,6 +6,47 @@ namespace: "appoline-pfe"
 
 replicaCount: 1
 
+global:
+  host: "localhost"
+  adminUser: "admin"
+  adminPassword: "admin"
+
+grafana:
+  service:
+    port: 2222
+#  nodeSelector:
+#    myk8s-2: myk8s-2
+  persistence:
+    enabled: true
+    storageClassName: standard
+    accessModes: 
+      - ReadWriteOnce
+    size: 3Gi
+    annotations: {}
+#    subPath: "grafana"
+    existingClaim: grafana-pvc
+  plugins:
+    - linksmart-sensorthings-datasource
+
+frost:
+  size: 30Mi
+  db:
+    ports:
+      postgresql:
+        servicePort: 2223
+    persistence:
+      enabled: true
+      existingClaim:
+      storageClassName: frost-server-db-local
+      accessModes:
+        - ReadWriteOnce
+      capacity: 5Gi
+      # Uncomment bellow if you want to use the builtin "frost-server-db-local" StorageClass name.
+      # Only compatible if the ReadWriteOnce access mode is only claimed (check the frost.db.persistence.accessModes value).
+      # See project documentation for more information
+      local:
+        nodeMountPath: /mnt/data/frost-server-d
+        
 image:
   repository: nginx
   tag: stable
@@ -13,6 +54,7 @@ image:
 
 nameOverride: ""
 fullnameOverride: ""
+
 
 service:
   type: ClusterIP
