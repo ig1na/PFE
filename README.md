@@ -31,6 +31,10 @@ Execute these commands in the root directory of this project.
 
 `helm --init tiller-namespace appoline-k8s`
 
+#### Installer notre chart helm
+
+`helm install --name my-release-name --set global.host="mon-host.fr" .`
+
 ##### Install Traefik in daemon-set mode:
 `kubectl apply -f traefik-rbac.yaml`\
 `kubectl apply -f traefik-ds.yaml`\
