@@ -1,79 +1,42 @@
+
 # PFE - Apolline-k8s
+
 ## Hugo Alder - Antoine Lafrance
 
-### Ce que nous avons fait
 
-Nous avons commencé par travailler sur minikube et nous y avons deployé grafana et le serveur frost. Conscients des différences qu'il existe entre cette solution locale et un véritable cluster distant, nous avons commencé à faire ces deploiements sur un serveur cloud OVH.
+### Présentation
 
-Nous avons eu des difficultés avec le déploiement de grafana notamment avec l'accès via l'url /grafana qui ne fonctionnait pas à cause d'un paramètre de configuration du reverse-proxy.
+Ce projet a pour but de déployer automatiquement les services associés à l'analyse des données récupérées par des capteurs de détection de la qualité de l'air dans le cadre du projet Apolline de l'Inria sur un cluster Kubernetes.
 
-Nous avons configuré un ingress controller avec un reverse proxy traefik pour éviter d'avoir à passer par les ports et sécuriser l'accès. Si on tente d'accéder à un service qui n'est pas deployé sur le node master, l'accès par le port de ce node n'est pas possible sans ingress controller.
+### Installation
 
-Nous essayons actuellement d'activer la persistence des données car le fait d'avoir des repliques empêche la sauvegarde de session. En effet lorsqu'un client se connecte au service, kubernetes redirige le client sur un pod différent à chaque requête, le pod ne peut donc pas garder la session en mémoire si la persistence des données n'est pas active. Nous pensions qu'en décrivant les paramètres "persistence" dans le values.yaml du chart grafana, la création des volumes se feraient automatiquement mais cela n'est pas le cas. Nous devons d'abord créer des volumes persistants, puis des claims, et nous devons quand même préciser tous les paramètres de la persistence dans le grafana-config.yaml.
+Pour commencer, il est nécessaire de disposer d'au moins 3 machines Ubuntu accessibles en tant que root afin de pouvoir monter le cluster Kubernetes gràce aux commande suivantes. Il faut dans un premier temps configurer chaque machine, puis configurer le cluster.
 
-La persistence des données est maintenant activée, nous avons pour cela dû créer un dossier directement sur le serveur avec des droits d'écriture pour que kubernetes puisse y créer son persistenceVolume. Nous avons du aussi ajouter un label au paramètre nodeSelector du fichier grafana-config.yaml car nous avions plusieurs nodes sur notre serveur et lors du deploiement kubernetes choisissait un node au hasard.
+Assurez-vous que chaque machine dispose bien d'un hostname différent.
 
-### Ce qu'il nous reste à faire
+#### Configuration des machines
 
-Deployer istio sur le cluster et tenter de sécuriser le cluster.\
-Pouvoir deployer correctement les différentes parties et faire un scrpit bash qui execute tout en une ligne de commande.\
-Etendre la base de données OGC pour matcher celle déjà existante.
+Pour configurer la machine qui servira de nœud maître, lancer le script `master_node_conf.sh`contenu dans le répertoire `configuration` de ce projet dans le répertoire home du nœud maître.
 
-### Commands
+En lançant le script précédant, vous allez obetnir un affichage indiquant `You can now join any number of machines on running the following on each node as root` suivi d'une commande.
 
-Execute these commands in the root directory of this project.
+Pour configurer les machines esclaves du cluster, lancer le script `slave_node_conf.sh`contenu dans le répertoire `configuration` de ce projet dans le répertoire home de chaque machine esclave. Une fois cela fait, lancer la commande indiquée lors de la configuration du noeud maître pour rejoindre le cluster Kubernetes.
 
-#### Install Helm/Tiller in order to use charts:
+#### Installation de Helm/Tiller
 
-`curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh`\
-`chmod 700 get_helm.sh`\
-`./get_helm.sh`
+Une fois que tous les noeuds du cluster sont configurés, installer Helm.
 
-`helm --init tiller-namespace appoline-k8s`
+Helm est un gestionnaire de paquets pour Kubernetes. Pour l'installer, lancer depuis le répertoire home de ce projet le script `helm_conf.sh` contenu dans le répertoire `configuration` depuis le noeud maître.
 
-#### Installer notre chart helm
+#### Installation des services Kubernetes
 
-`helm install --name my-release-name --set global.host="mon-host.fr" appoline-k8s/`
+Pour déployer l'ensemble des services disponibles en une seule ligne de commande grâce à une chart Helm personnalisée, lancer la commande `helm install --name my-release-name --set global.host="mon-host.fr" appoline-k8s/` depuis le noeud maître.
 
-##### Install Traefik in daemon-set mode:
-`kubectl apply -f traefik-rbac.yaml`\
-`kubectl apply -f traefik-ds.yaml`\
-`kubectl apply -f traefik-ingress.yaml`
+Le daemonset Traefik fait office d'ingress-controller.
+Le service Grafana devrait être accessible à l'adresse mon-host.fr/grafana. 
+Le service FROST devrait être accessible à l'adresse mon-host.fr/frost
 
-##### Install Grafana with custom values in .yaml file:
-SensorThings plugin is automatically installed.\
-`helm install --name grafana-release -f ./grafana-chart/grafana-config.yaml stable/grafana`
+#### Suppression des services
 
-Ingress.\
-`kubectl apply -f ./grafana-chart/grafana-ingress.yaml`
+Pour supprimer l'ensemble des services déployés, lancer la commande `helm delete --purge my-release-name` depuis le noeud maître.
 
-Connect on the node you want to install Grafana and create the directory /tmp/data.\
-`mkdir /tmp/data`
-
-PersistentVolume and VolumeClaim (for persistence).\
-`kubectl create -f ./grafana-chart/grafana-pv.yaml`\
-`kubectl create -f ./grafana-chart/grafana-pvc.yaml`
-
-##### Install Frost-server:
-If helm repo isn't already declared\
-`helm repo add fraunhoferiosb https://fraunhoferiosb.github.io/helm-charts/`\
-`helm repo update fraunhoferiosb`
-
-Then install frost with custom values in .yaml file.\
-`helm install --name frost-release -f ./frost-chart/frost-config.yaml fraunhoferiosb/frost-server`
-
-Ingress.\
-`kubectl apply -f ./frost-chart/frost-ingress.yaml`
-
-Connect on the node you want to install Frost-server and create the directory /tmp/frost.\
-`mkdir /tmp/frost`
-
-PersistentVolume and VolumeClaim.\
-`kubectl create -f ./frost-chart/frost-pv.yaml`\
-`kubectl create -f ./frost-chart/frost-pvc.yaml`
-
-##### Removes helm release:
-`helm del --purge release-name`
-
-##### Kubectl helpers (bash inside pod):
-`kub exec -it POD-NAME -- /bin/bash`
